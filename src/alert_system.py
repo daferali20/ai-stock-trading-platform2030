@@ -2,21 +2,31 @@ import requests
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import telegram
-from src.config import Config
 import logging
+import os
+
+# محاولة استيراد Telegram
+try:
+    import telegram
+    TELEGRAM_AVAILABLE = True
+except ImportError:
+    print("⚠️ python-telegram-bot not installed")
+    TELEGRAM_AVAILABLE = False
 
 class AlertSystem:
     def __init__(self):
-        self.bot_token = Config.TELEGRAM_BOT_TOKEN
-        self.chat_id = Config.TELEGRAM_CHAT_ID
-        self.email_sender = Config.EMAIL_SENDER
-        self.email_password = Config.EMAIL_PASSWORD
-        self.email_receiver = Config.EMAIL_RECEIVER
+        self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN', '')
+        self.chat_id = os.getenv('TELEGRAM_CHAT_ID', '')
+        self.email_sender = os.getenv('EMAIL_SENDER', '')
+        self.email_password = os.getenv('EMAIL_PASSWORD', '')
+        self.email_receiver = os.getenv('EMAIL_RECEIVER', '')
         
         self.bot = None
-        if self.bot_token:
-            self.bot = telegram.Bot(token=self.bot_token)
+        if TELEGRAM_AVAILABLE and self.bot_token:
+            try:
+                self.bot = telegram.Bot(token=self.bot_token)
+            except:
+                self.bot = None
     
     def send_telegram(self, message):
         """إرسال تنبيه عبر Telegram"""
@@ -25,7 +35,7 @@ class AlertSystem:
                 self.bot.send_message(chat_id=self.chat_id, text=message)
                 return True
         except Exception as e:
-            logging.error(f"Telegram error: {e}")
+            print(f"⚠️ Telegram error: {e}")
         return False
     
     def send_email(self, subject, message):
@@ -38,7 +48,6 @@ class AlertSystem:
             msg['From'] = self.email_sender
             msg['To'] = self.email_receiver
             msg['Subject'] = subject
-            
             msg.attach(MIMEText(message, 'plain'))
             
             server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -48,7 +57,7 @@ class AlertSystem:
             server.quit()
             return True
         except Exception as e:
-            logging.error(f"Email error: {e}")
+            print(f"⚠️ Email error: {e}")
         return False
     
     def console_alert(self, message):
@@ -70,17 +79,11 @@ class AlertSystem:
     def send_signal_alert(self, signal_data, symbol):
         """إرسال تنبيه مخصص لإشارات التداول"""
         message = f"""
-📊 *Stock Alert: {symbol}*
+📊 Stock Alert: {symbol}
 ━━━━━━━━━━━━━━━━━
-🟢 *Signal:* {signal_data['signal']}
-📈 *Confidence:* {signal_data['confidence']:.1f}%
-🎯 *Score:* {signal_data['score']:.2f}
-
-📋 *Details:*
-• Technical: {signal_data['details'].get('technical', 0):.2f}
-• Sentiment: {signal_data['details'].get('sentiment', 0):.2f}
-• Prediction: {signal_data['details'].get('prediction', 0):.2f}
-• Market: {signal_data['details'].get('market', 0):.2f}
+🟢 Signal: {signal_data['signal']}
+📈 Confidence: {signal_data['confidence']:.1f}%
+🎯 Score: {signal_data['score']:.2f}
 ━━━━━━━━━━━━━━━━━
 """
         # إرسال التنبيه عبر جميع الطرق
