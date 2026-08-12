@@ -4,7 +4,13 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import time
+import sys
+import os
 
+# إضافة المسار الرئيسي للمشروع
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# استيراد الملفات من src
 from src.data_fetcher import DataFetcher
 from src.technical_analysis import TechnicalAnalyzer
 from src.sentiment_analyzer import SentimentAnalyzer
