@@ -1,11 +1,12 @@
 import sys
 import os
 
+# محاولة استيراد VADER
 try:
     from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
     VADER_AVAILABLE = True
 except ImportError:
-    print("⚠️ vaderSentiment not installed. Install with: pip install vaderSentiment")
+    print("⚠️ vaderSentiment not installed")
     VADER_AVAILABLE = False
     SentimentIntensityAnalyzer = None
 
@@ -20,34 +21,28 @@ class SentimentAnalyzer:
         if VADER_AVAILABLE and SentimentIntensityAnalyzer is not None:
             try:
                 self.vader = SentimentIntensityAnalyzer()
-                print("✅ VADER loaded successfully")
-            except Exception as e:
-                print(f"⚠️ Error loading VADER: {e}")
+                print("✅ VADER loaded")
+            except:
                 self.vader = None
     
     def get_news_sentiment(self, symbol, days=7):
-        """تحليل مشاعر الأخبار باستخدام VADER فقط"""
+        """تحليل مشاعر الأخبار"""
         try:
-            # جلب الأخبار من yfinance
             ticker = yf.Ticker(symbol)
             news = ticker.news
             
             if not news:
                 return {'sentiment': 'NEUTRAL', 'score': 0, 'sources': 0}
             
-            # تحليل كل خبر
             sentiments = []
-            for item in news[:10]:  # آخر 10 أخبار
-                if 'title' in item:
-                    text = item['title']
-                    
-                    # VADER
-                    if self.vader is not None:
-                        try:
-                            vader_score = self.vader.polarity_scores(text)
-                            sentiments.append(vader_score['compound'])
-                        except:
-                            pass
+            for item in news[:10]:
+                if 'title' in item and self.vader is not None:
+                    try:
+                        text = item['title']
+                        vader_score = self.vader.polarity_scores(text)
+                        sentiments.append(vader_score['compound'])
+                    except:
+                        pass
             
             if sentiments:
                 avg_sentiment = sum(sentiments) / len(sentiments)
@@ -67,13 +62,8 @@ class SentimentAnalyzer:
             return {'sentiment': 'NEUTRAL', 'score': 0, 'sources': 0}
             
         except Exception as e:
-            print(f"⚠️ Error getting news: {e}")
+            print(f"⚠️ Error: {e}")
             return {'sentiment': 'NEUTRAL', 'score': 0, 'sources': 0}
     
     def analyze_reddit(self, symbol, limit=10):
-        """تحليل مشاعر Reddit (محاكاة)"""
-        return {
-            'sentiment': 'NEUTRAL',
-            'score': 0,
-            'posts_analyzed': 0
-        }
+        return {'sentiment': 'NEUTRAL', 'score': 0, 'posts_analyzed': 0}
