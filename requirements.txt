@@ -7,3 +7,4 @@ vaderSentiment
 python-dotenv
 requests
 plotly
+scikit-learn
