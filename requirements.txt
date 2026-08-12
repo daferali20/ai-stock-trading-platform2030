@@ -1,3 +1,4 @@
+# الأساسيات
 streamlit
 pandas
 numpy
@@ -5,10 +6,19 @@ plotly
 yfinance
 ta
 scikit-learn
-tensorflow
 python-dotenv
 requests
+
+# تحليل المشاعر
 vaderSentiment
+
+# التنبيهات
 python-telegram-bot
 schedule
+
+# حفظ النماذج
 joblib
+
+# التعلم العميق (قد يكون اختياري)
+tensorflow
+# أو tensorflow-cpu للأنظمة بدون GPU
