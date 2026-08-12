@@ -221,7 +221,9 @@ if data is not None and not data.empty:
             st.subheader("📰 تحليل المشاعر")
             if st.button("🔄 تحليل المشاعر"):
                 with st.spinner('جاري تحليل المشاعر...'):
-                    sentiment = st.session_state.data_fetcher.sentiment_analyzer.get_news_sentiment(symbol)
+                    sentiment_analyzer = SentimentAnalyzer()
+                    sentiment = sentiment_analyzer.get_news_sentiment(symbol)
+                    
                     if sentiment:
                         col_s1, col_s2, col_s3 = st.columns(3)
                         col_s1.metric("المشاعر", sentiment['sentiment'])
