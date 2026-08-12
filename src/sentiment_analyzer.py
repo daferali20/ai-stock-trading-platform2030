@@ -1,21 +1,13 @@
 import sys
 import os
 
-# محاولة استيراد VADER
 try:
     from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+    VADER_AVAILABLE = True
 except ImportError:
     print("⚠️ vaderSentiment not installed. Install with: pip install vaderSentiment")
+    VADER_AVAILABLE = False
     SentimentIntensityAnalyzer = None
-
-# محاولة استيراد Transformers (اختياري)
-try:
-    from transformers import pipeline
-    TRANSFORMERS_AVAILABLE = True
-except ImportError:
-    print("⚠️ transformers not installed. Install with: pip install transformers")
-    TRANSFORMERS_AVAILABLE = False
-    pipeline = None
 
 import yfinance as yf
 import requests
@@ -25,39 +17,23 @@ import re
 class SentimentAnalyzer:
     def __init__(self):
         self.vader = None
-        if SentimentIntensityAnalyzer is not None:
+        if VADER_AVAILABLE and SentimentIntensityAnalyzer is not None:
             try:
                 self.vader = SentimentIntensityAnalyzer()
-            except:
-                self.vader = None
-        self.finbert = None
-        self.transformers_available = TRANSFORMERS_AVAILABLE
-    
-    def load_finbert(self):
-        """تحميل نموذج FinBERT"""
-        if not self.transformers_available:
-            print("⚠️ Transformers not available. FinBERT disabled.")
-            return None
-            
-        if self.finbert is None:
-            try:
-                self.finbert = pipeline("sentiment-analysis", 
-                                       model="ProsusAI/finbert")
-                print("✅ FinBERT loaded successfully")
+                print("✅ VADER loaded successfully")
             except Exception as e:
-                print(f"⚠️ Error loading FinBERT: {e}")
-                self.finbert = None
-        return self.finbert
+                print(f"⚠️ Error loading VADER: {e}")
+                self.vader = None
     
     def get_news_sentiment(self, symbol, days=7):
-        """تحليل مشاعر الأخبار"""
+        """تحليل مشاعر الأخبار باستخدام VADER فقط"""
         try:
             # جلب الأخبار من yfinance
             ticker = yf.Ticker(symbol)
             news = ticker.news
             
             if not news:
-                return {'sentiment': 'NEUTRAL', 'score': 0}
+                return {'sentiment': 'NEUTRAL', 'score': 0, 'sources': 0}
             
             # تحليل كل خبر
             sentiments = []
@@ -70,20 +46,6 @@ class SentimentAnalyzer:
                         try:
                             vader_score = self.vader.polarity_scores(text)
                             sentiments.append(vader_score['compound'])
-                        except:
-                            pass
-                    
-                    # FinBERT (إذا كان متاحاً)
-                    if self.transformers_available:
-                        try:
-                            finbert = self.load_finbert()
-                            if finbert is not None:
-                                result = finbert(text)[0]
-                                # تحويل النتيجة إلى رقم
-                                if result['label'] == 'positive':
-                                    sentiments.append(result['score'])
-                                elif result['label'] == 'negative':
-                                    sentiments.append(-result['score'])
                         except:
                             pass
             
@@ -102,11 +64,11 @@ class SentimentAnalyzer:
                     'sources': len(sentiments)
                 }
             
-            return {'sentiment': 'NEUTRAL', 'score': 0}
+            return {'sentiment': 'NEUTRAL', 'score': 0, 'sources': 0}
             
         except Exception as e:
             print(f"⚠️ Error getting news: {e}")
-            return {'sentiment': 'NEUTRAL', 'score': 0}
+            return {'sentiment': 'NEUTRAL', 'score': 0, 'sources': 0}
     
     def analyze_reddit(self, symbol, limit=10):
         """تحليل مشاعر Reddit (محاكاة)"""
