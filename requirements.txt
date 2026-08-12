@@ -5,9 +5,12 @@ plotly
 yfinance
 ta
 scikit-learn
+tensorflow-cpu
 python-dotenv
 requests
 vaderSentiment
 python-telegram-bot
 schedule
 joblib
+transformers
+torch
