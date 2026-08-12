@@ -175,7 +175,12 @@ if data is not None and not data.empty:
         with col1:
             st.subheader("Bollinger Bands")
             bb = ta.calculate_bollinger_bands()
-            if bb is not None and 'BB_High' in bb.columns:
+            
+            # تحويل bb إلى DataFrame إذا كان dict
+            if isinstance(bb, dict):
+                bb = pd.DataFrame(bb)
+                
+            if bb is not None and not bb.empty and 'BB_High' in bb.columns:
                 fig_bb = go.Figure()
                 fig_bb.add_trace(go.Scatter(x=data['Date'], y=data['Close'], name='Price', line=dict(color='blue')))
                 fig_bb.add_trace(go.Scatter(x=data['Date'], y=bb['BB_High'], name='Upper Band', line=dict(color='red', dash='dash')))
@@ -187,7 +192,12 @@ if data is not None and not data.empty:
         with col2:
             st.subheader("MACD")
             macd_data = ta.calculate_macd()
-            if macd_data is not None and 'MACD' in macd_data.columns:
+            
+            # تحويل macd_data إلى DataFrame إذا كان dict
+            if isinstance(macd_data, dict):
+                macd_data = pd.DataFrame(macd_data)
+                
+            if macd_data is not None and not macd_data.empty and 'MACD' in macd_data.columns:
                 fig_macd = go.Figure()
                 fig_macd.add_trace(go.Scatter(x=data['Date'], y=macd_data['MACD'], name='MACD', line=dict(color='blue')))
                 fig_macd.add_trace(go.Scatter(x=data['Date'], y=macd_data['MACD_Signal'], name='Signal', line=dict(color='red')))
