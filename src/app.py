@@ -1,5 +1,16 @@
-import streamlit as st
+import os
+import sys
+
+# إضافة مجلد الجذر (Root) إلى مسارات Python
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# الاستيرادات الخاصة بك تأتي بعد ذلك:
 import pandas as pd
+import streamlit as st
+from src.data_fetcher import DataFetcher
+from src.technical_analysis import TechnicalAnalyzer
+from src.sentiment_analyzer import SentimentAnalyzer
+
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import yfinance as yf
